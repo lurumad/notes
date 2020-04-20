@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Notes.Infrastructure.Validations
+namespace Notes.Infrastructure.Exceptions
 {
     public class FluentValidationProblemDetails : ProblemDetails
     {

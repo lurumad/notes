@@ -1,26 +1,35 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Notes.Infrastructure.Authentication;
 using Notes.Infrastructure.Data;
+using Notes.Infrastructure.Exceptions;
 using Notes.Model;
 using System;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using static Notes.Infrastructure.Validations.NotesApi;
 
 namespace Notes
 {
     public partial class NotesApi
     {
         private readonly NotesDbContext dbContext;
-        private readonly IValidationScope<Note> validationScope;
+        private readonly IValidator<Note> validator;
+        private readonly IAccessTokenValidator accessTokenValidator;
 
-        public NotesApi(NotesDbContext dbContext, IValidationScope<Note> validationScope)
+        public NotesApi(
+            NotesDbContext dbContext,
+            IValidator<Note> validator,
+            IAccessTokenValidator accessTokenValidator)
         {
-            this.dbContext = dbContext ?? throw new System.ArgumentNullException(nameof(dbContext));
-            this.validationScope = validationScope ?? throw new ArgumentNullException(nameof(validationScope));
+            this.dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            this.validator = validator ?? throw new ArgumentNullException(nameof(validator));
+            this.accessTokenValidator = accessTokenValidator ?? throw new ArgumentNullException(nameof(accessTokenValidator));
         }
 
         [FunctionName("NotesApi_Get")]
@@ -28,7 +37,14 @@ namespace Notes
             [HttpTrigger(AuthorizationLevel.Anonymous, nameof(HttpMethods.Get), Route = "notes")] HttpRequest req,
             ILogger log)
         {
-            return new OkObjectResult(await dbContext.Notes.ToListAsync());
+            var user = await accessTokenValidator.Validate(req);
+
+            if (!user.Identity.IsAuthenticated)
+            {
+                return new UnauthorizedResult();
+            }
+
+            return new OkObjectResult(await dbContext.Notes.Where(note => note.UserId == user.GetSubjectId()).ToListAsync());
         }
 
         [FunctionName("NotesApi_GetById")]
@@ -37,11 +53,18 @@ namespace Notes
             [HttpTrigger(AuthorizationLevel.Anonymous, nameof(HttpMethods.Get), Route = "notes/{id:int}")] HttpRequest req,
             ILogger log)
         {
+            var user = await accessTokenValidator.Validate(req);
+
+            if (!user.Identity.IsAuthenticated)
+            {
+                return new UnauthorizedResult();
+            }
+
             log.GetByFunctionRequested(id);
 
-            var note = await dbContext.Notes.SingleOrDefaultAsync(note => note.Id == id);
-            
-            if (note is null) 
+            var note = await dbContext.Notes.SingleOrDefaultAsync(note => note.Id == id && note.UserId == user.GetSubjectId());
+
+            if (note is null)
             {
                 log.CouldNotFoundNoteBy(id);
 
@@ -57,16 +80,29 @@ namespace Notes
             HttpRequest req,
             ILogger log)
         {
-            return await validationScope.Validate(note, success: async () =>
+            var user = await accessTokenValidator.Validate(req);
+
+            if (!user.Identity.IsAuthenticated)
             {
-                dbContext.Notes.Add(note);
+                return new UnauthorizedResult();
+            }
 
-                await dbContext.SaveChangesAsync();
+            var validation = validator.Validate(note);
 
-                log.NoteAdded(note.Id);
+            if (!validation.IsValid)
+            {
+                return new BadRequestObjectResult(
+                    new FluentValidationProblemDetails(validation.Errors));
+            }
 
-                return new CreatedResult($"{req.Scheme}://{req.Host}/api/notes/{note.Id}", note);
-            });
+            note.UserId = user.GetSubjectId();
+            dbContext.Notes.Add(note);
+
+            await dbContext.SaveChangesAsync();
+
+            log.NoteAdded(note.Id);
+
+            return new CreatedResult($"{req.Scheme}://{req.Host}/api/notes/{note.Id}", note);
         }
 
         [FunctionName("NotesApi_Update")]
@@ -76,24 +112,65 @@ namespace Notes
             HttpRequest req,
             ILogger log)
         {
-            return await validationScope.Validate(note, success: async () =>
+            var user = await accessTokenValidator.Validate(req);
+
+            if (!user.Identity.IsAuthenticated)
             {
-                var currentNote = await dbContext.Notes.SingleOrDefaultAsync(note => note.Id == id);
+                return new UnauthorizedResult();
+            }
 
-                if (currentNote is null)
-                {
-                    log.CouldNotFoundNoteBy(id);
+            var validation = validator.Validate(note);
 
-                    return new NotFoundResult();
-                }
+            if (!validation.IsValid)
+            {
+                return new BadRequestObjectResult(
+                    new FluentValidationProblemDetails(validation.Errors));
+            }
 
-                currentNote.Content = note.Content;
-                currentNote.Important = note.Important;
+            var currentNote = await dbContext.Notes.SingleOrDefaultAsync(note => note.Id == id);
 
-                await dbContext.SaveChangesAsync();
+            if (currentNote is null)
+            {
+                log.CouldNotFoundNoteBy(id);
 
-                return new OkObjectResult(note);
-            });
+                return new NotFoundResult();
+            }
+
+            currentNote.Content = note.Content;
+            currentNote.Important = note.Important;
+            currentNote.UserId = user.GetSubjectId();
+
+            await dbContext.SaveChangesAsync();
+
+            return new OkObjectResult(note);
+        }
+
+        [FunctionName("NotesApi_Delete")]
+        public async Task<IActionResult> Delete(
+            int id,
+            [HttpTrigger(AuthorizationLevel.Anonymous, nameof(HttpMethods.Delete), Route = "notes/{id:int}")] HttpRequest req,
+            ILogger log)
+        {
+            var user = await accessTokenValidator.Validate(req);
+
+            if (!user.Identity.IsAuthenticated)
+            {
+                return new UnauthorizedResult();
+            }
+
+            var note = await dbContext.Notes.SingleOrDefaultAsync(note => note.Id == id);
+
+            if (note is null)
+            {
+                log.CouldNotFoundNoteBy(id);
+
+                return new NotFoundResult();
+            }
+
+            dbContext.Remove(note);
+            await dbContext.SaveChangesAsync();
+
+            return new NoContentResult();
         }
     }
 }

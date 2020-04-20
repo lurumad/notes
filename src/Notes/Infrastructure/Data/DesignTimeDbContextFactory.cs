@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using Notes.Infrastructure.Options;
-using System.IO;
 
 namespace Notes.Infrastructure.Data
 {

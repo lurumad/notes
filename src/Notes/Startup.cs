@@ -2,13 +2,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Notes.Infrastructure.Data;
 using Notes.Infrastructure.Options;
 using System.IO;
 using FluentValidation;
-using static Notes.NotesApi;
-using static Notes.Infrastructure.Validations.NotesApi;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Notes.Infrastructure.Authentication;
+using Microsoft.IdentityModel.Logging;
 
 [assembly: FunctionsStartup(typeof(Notes.Startup))]
 namespace Notes
@@ -19,6 +20,8 @@ namespace Notes
 
         public Startup()
         {
+            IdentityModelEventSource.ShowPII = true;
+
             configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
@@ -29,9 +32,12 @@ namespace Notes
         public override void Configure(IFunctionsHostBuilder builder)
         {
             builder.Services
-                .AddValidatorsFromAssembly(typeof(Startup).Assembly)
-                .AddScoped(typeof(IValidationScope<>), typeof(FunctionValidationScope<>))
+                .AddHttpClient()
                 .AddSingleton(configuration)
+                .Configure<JwtSettings>(configuration.GetSection(nameof(JwtSettings)))
+                .AddScoped(sp => sp.GetRequiredService<IOptions<JwtSettings>>().Value)
+                .AddValidatorsFromAssembly(typeof(Startup).Assembly)
+                .AddScoped<IAccessTokenValidator,JwtAccessTokenValidator>()
                 .AddDbContextPool<NotesDbContext>(options =>
                 {
                     options.UseSqlServer(configuration.GetConnectionString(nameof(ConnectionStrings.SqlServer)), sqlOptions =>
