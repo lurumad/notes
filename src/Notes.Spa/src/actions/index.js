@@ -47,6 +47,20 @@ export const removeNote = (id) => {
   };
 };
 
+export const REMOVE_ALL_NOTES = "REMOVE_ALL_NOTES";
+
+export const removeAllNotes = () => {
+  return async (dispatch) => {
+    dispatch(loading());
+    await notesService.removeAll();
+    dispatch({
+      type: REMOVE_ALL_NOTES,
+      data: [],
+    });
+    dispatch(loaded());
+  };
+};
+
 export const INIT_NOTES = "INIT_NOTES";
 
 export const initializeNotes = () => {
@@ -91,9 +105,49 @@ export const loaded = () => {
 export const USER_FOUND = "USER_FOUND";
 
 export const userFound = (user) => {
-  console.log("user found");
   return {
     type: USER_FOUND,
     payload: user,
+  };
+};
+
+export const SILENT_RENEW_ERROR = "SILENT_RENEW_ERROR";
+
+export const silentRenewError = (error) => {
+  return {
+    type: SILENT_RENEW_ERROR,
+    payload: error,
+  };
+};
+
+export const ACCESS_TOKEN_EXPIRED = "ACCESS_TOKEN_EXPIRED";
+
+export const accessTokenExpired = () => {
+  return {
+    type: ACCESS_TOKEN_EXPIRED,
+  };
+};
+
+export const ACCESS_TOKEN_EXPIRING = "ACCESS_TOKEN_EXPIRING";
+
+export const accessTokenExpiring = () => {
+  return {
+    type: ACCESS_TOKEN_EXPIRING,
+  };
+};
+
+export const USER_SIGN_OUT = "USER_SIGN_OUT";
+
+export const userSignedOut = () => {
+  return {
+    type: USER_SIGN_OUT,
+  };
+};
+
+export const USER_UNLOADED = "USER_UNLOADED";
+
+export const userUnloaded = () => {
+  return {
+    type: USER_UNLOADED,
   };
 };

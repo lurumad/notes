@@ -7,6 +7,7 @@ import Notes from "./components/Notes";
 import Filter from "./components/Filter";
 import Button from "./components/Button";
 import Loading from "./components/Loading";
+import { removeAllNotes } from "./actions/index";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -31,7 +32,12 @@ const App = () => {
           <div className="container">
             <div className="text-right">
               <Filter />
-              <Button className="btn" id="clear" text="Clear all" />
+              <Button
+                className="btn"
+                id="clear"
+                text="Clear all"
+                onClick={() => dispatch(removeAllNotes())}
+              />
             </div>
           </div>
         </footer>

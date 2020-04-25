@@ -6,6 +6,14 @@ const Login = () => {
     userManager.signinRedirect();
   }, []);
 
+  useEffect(() => {
+    async function completeSigninRedirect() {
+      await userManager.signinRedirect();
+    }
+
+    completeSigninRedirect();
+  }, []);
+
   return <></>;
 };
 

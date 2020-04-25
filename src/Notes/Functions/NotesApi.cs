@@ -44,7 +44,12 @@ namespace Notes
                 return new UnauthorizedResult();
             }
 
-            return new OkObjectResult(await dbContext.Notes.Where(note => note.UserId == user.GetSubjectId()).ToListAsync());
+            log.GetNotesByUser(user.GetSubjectId());
+
+            return new OkObjectResult(await dbContext.Notes
+                .Where(note => note.UserId == user.GetSubjectId())
+                .ToListAsync()
+            );
         }
 
         [FunctionName("NotesApi_GetById")]
@@ -60,7 +65,7 @@ namespace Notes
                 return new UnauthorizedResult();
             }
 
-            log.GetByFunctionRequested(id);
+            log.GetNotesBy(id);
 
             var note = await dbContext.Notes.SingleOrDefaultAsync(note => note.Id == id && note.UserId == user.GetSubjectId());
 
@@ -167,7 +172,32 @@ namespace Notes
                 return new NotFoundResult();
             }
 
+            log.DeleteNotesBy(id);
             dbContext.Remove(note);
+            await dbContext.SaveChangesAsync();
+
+            return new NoContentResult();
+        }
+
+        [FunctionName("NotesApi_Delete_All")]
+        public async Task<IActionResult> DeleteAll(
+            [HttpTrigger(AuthorizationLevel.Anonymous, nameof(HttpMethods.Delete), Route = "notes")] HttpRequest req,
+            ILogger log)
+        {
+            var user = await accessTokenValidator.Validate(req);
+
+            if (!user.Identity.IsAuthenticated)
+            {
+                return new UnauthorizedResult();
+            }
+
+            log.DeleteNotesByUser(user.GetSubjectId());
+
+            var notes = await dbContext.Notes
+                .Where(note => note.UserId == user.GetSubjectId())
+                .ToListAsync();
+
+            dbContext.Notes.RemoveRange(notes);
             await dbContext.SaveChangesAsync();
 
             return new NoContentResult();

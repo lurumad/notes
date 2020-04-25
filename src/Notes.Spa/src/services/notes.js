@@ -35,4 +35,12 @@ const remove = (id) => {
   return request.then((_) => _);
 };
 
-export default { getAll, create, update, remove };
+const removeAll = () => {
+  const user = store.getState().user;
+  const request = axios.delete(`${baseUrl}`, {
+    headers: { Authorization: `Bearer ${user.access_token}` },
+  });
+  return request.then((_) => _);
+};
+
+export default { getAll, create, update, remove, removeAll };
