@@ -10,6 +10,7 @@ namespace Notes.Infrastructure.Diagnostics
         public static readonly int GetNotesByUserId = 5003;
         public static readonly int DeleteNotesById = 5004;
         public static readonly int DeleteNotesByUserId = 5005;
+
         public static readonly EventId GetNotesBy = new EventId(GetNotesById, nameof(GetNotesBy));
         public static readonly EventId CouldNotFoundNoteBy = new EventId(CouldNotFoundNoteById, nameof(CouldNotFoundNoteBy));
         public static readonly EventId NoteAdded = new EventId(NoteAddedId, nameof(NoteAdded));

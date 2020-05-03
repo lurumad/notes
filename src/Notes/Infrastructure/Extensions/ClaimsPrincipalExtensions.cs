@@ -9,7 +9,7 @@ namespace System.Security.Claims
             var claim = principal.FindFirst(JwtClaimTypes.Subject);
 
             if (claim == null) throw new InvalidOperationException("sub claim is missing");
-            
+
             return claim.Value;
         }
     }
