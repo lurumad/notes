@@ -52,7 +52,7 @@
         "description": "The password of the admin user of the SQL Server"
       }
     }
-  }
+  },
   "variables": {
     "hostingPlanName": "[concat('hostingplan-', uniqueString(resourceGroup().id))]",
     "dynamicHostingPlanName": "[concat('dynamichostingplan-', uniqueString(resourceGroup().id))]",
@@ -61,7 +61,7 @@
     "sqlserverName": "[concat('sqlserver-', uniqueString(resourceGroup().id))]",
     "sqlserverNameSecret": "[concat(variables('keyVaultName'), '/', 'SqlServer')]",
     "sqlserverNameSecretResourceId": "[resourceId(resourceGroup().name, 'Microsoft.KeyVault/vaults/secrets', variables('keyVaultName'), split(variables('sqlserverNameSecret'), '/')[1])]",
-    "storageName": "[concat('storage-', uniqueString(resourceGroup().id))]",
+    "storageName": "[concat('storage', uniqueString(resourceGroup().id))]",
     "storageNameId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', variables('storageName'))]",
     "storageNameSecret": "[concat(variables('keyVaultName'), '/', 'StorageAccountName')]",
     "storageNameSecretResourceId": "[resourceId(resourceGroup().name, 'Microsoft.KeyVault/vaults/secrets', variables('keyVaultName'), split(variables('storageNameSecret'), '/')[1])]",
@@ -134,22 +134,6 @@
       ]
     },
     {
-      "apiVersion": "2018-02-01",
-      "name": "[variables('hostingPlanName')]",
-      "type": "Microsoft.Web/serverfarms",
-      "location": "[resourceGroup().location]",
-      "tags": {
-        "displayName": "HostingPlan"
-      },
-      "sku": {
-        "name": "[parameters('skuName')]",
-        "capacity": "[parameters('skuCapacity')]"
-      },
-      "properties": {
-        "name": "[variables('hostingPlanName')]"
-      }
-    },
-    {
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2018-02-01",
       "name": "[variables('dynamicHostingPlanName')]",
@@ -165,26 +149,6 @@
       "tags": {
         "displayName": "DynamicHostingPlan"
       }
-    },
-    {
-      "apiVersion": "2018-02-01",
-      "name": "[variables('webSiteName')]",
-      "type": "Microsoft.Web/sites",
-      "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "[variables('hostingPlanName')]"
-      ],
-      "tags": {
-        "[concat('hidden-related:', resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName')))]": "empty",
-        "displayName": "Frontend"
-      },
-      "properties": {
-        "name": "[variables('webSiteName')]",
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
-      },
-      "resources": [
-
-      ]
     },
     {
       "apiVersion": "2018-02-01",
@@ -250,8 +214,8 @@
         "tenantId": "[subscription().tenantId]",
         "accessPolicies": [
           {
-            "objectId": "[reference(variables('apiSiteNameId'), '2015-08-31-PREVIEW').principalId]",
-            "tenantId": "[reference(variables('apiSiteNameId'), '2015-08-31-PREVIEW').tenantId]",
+            "objectId": "[reference(resourceId('Microsoft.Web/sites', variables('apiSiteName')), '2018-11-01', 'Full').identity.principalId]",
+            "tenantId": "[reference(resourceId('Microsoft.Web/sites', variables('apiSiteName')), '2018-11-01', 'Full').identity.tenantId]",
             "permissions": {
               "keys": [ "Get", "List" ],
               "secrets": [ "Get", "List" ]

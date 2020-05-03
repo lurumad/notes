@@ -32,6 +32,21 @@ namespace Notes
             this.accessTokenValidator = accessTokenValidator ?? throw new ArgumentNullException(nameof(accessTokenValidator));
         }
 
+        [FunctionName("Migrate_Get")]
+        public async Task<IActionResult> Get([HttpTrigger(AuthorizationLevel.Anonymous, nameof(HttpMethods.Get), Route = "migrate")] HttpRequest req)
+        {
+            var user = await accessTokenValidator.Validate(req);
+
+            if (!user.Identity.IsAuthenticated)
+            {
+                return new UnauthorizedResult();
+            }
+
+            await dbContext.Database.MigrateAsync();
+
+            return new OkObjectResult(new { success = true });
+        }
+
         [FunctionName("NotesApi_Get")]
         public async Task<IActionResult> Get(
             [HttpTrigger(AuthorizationLevel.Anonymous, nameof(HttpMethods.Get), Route = "notes")] HttpRequest req,
