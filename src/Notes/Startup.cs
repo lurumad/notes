@@ -31,6 +31,7 @@ namespace Notes
         public override void Configure(IFunctionsHostBuilder builder)
         {
             builder.Services
+                .AddLogging()
                 .AddHttpClient()
                 .AddSingleton(configuration)
                 .Configure<JwtSettings>(configuration.GetSection(nameof(JwtSettings)))

@@ -188,10 +188,9 @@
             "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageName'), ';AccountKey=', listKeys(variables('storageNameId'),'2015-05-01-preview').key1, ';EndpointSuffix=core.windows.net')]",
             "WEBSITE_CONTENTSHARE": "[tolower(variables('apiSiteName'))]",
             "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-            "ConnectionStrings_SqlServer": "[concat('@Microsoft.KeyVault(SecretUri=', reference(variables('sqlserverNameSecretResourceId'),'2015-06-01').secretUriWithVersion, ')')]",
-            "JwtSettings_Authority": "https://demo.identityserver.io",
-            "JwtSettings_Audience": "api",
-            "Host_cors": "*"
+            "ConnectionStrings__SqlServer": "[concat('@Microsoft.KeyVault(SecretUri=', reference(variables('sqlserverNameSecretResourceId'),'2015-06-01').secretUriWithVersion, ')')]",
+            "JwtSettings__Authority": "https://demo.identityserver.io",
+            "JwtSettings__Audience": "api"
           }
         }
       ]
