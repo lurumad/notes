@@ -15,12 +15,6 @@ const oidcReducer = (state = null, action) => {
     case SILENT_RENEW_ERROR:
       console.error("silent renew error", action.payload);
       return null;
-    // case ACCESS_TOKEN_EXPIRED:
-    //   console.log("access token expired");
-    //   return null;
-    // case ACCESS_TOKEN_EXPIRING:
-    //   console.log("access token expiring");
-    //   return null;
     case USER_SIGN_OUT:
       console.log("user signed out");
       return null;
