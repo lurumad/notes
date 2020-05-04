@@ -33,7 +33,7 @@ namespace Notes
         }
 
         [FunctionName("Migrate_Put")]
-        public async Task<IActionResult> Get([HttpTrigger(AuthorizationLevel.Anonymous, nameof(HttpMethods.Put), Route = "migrate")] HttpRequest req)
+        public async Task<IActionResult> Migrate([HttpTrigger(AuthorizationLevel.Anonymous, nameof(HttpMethods.Put), Route = "migrate")] HttpRequest req)
         {
             var user = await accessTokenValidator.Validate(req);
 
