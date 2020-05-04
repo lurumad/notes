@@ -1,0 +1,36 @@
+name: Deploy Front-End
+
+on:
+  push:
+    paths:
+      - "src/Notes.Spa/**"
+
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v1
+
+      - name: Login to Azure
+        uses: Azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Install npm packages
+        shell: bash
+        run: |
+          cd $GITHUB_WORKSPACE/src/Notes.Spa
+          yarn install
+      - name: Build app
+        shell: bash
+        run: |
+          cd $GITHUB_WORKSPACE/src/Notes.Spa
+          yarn build
+      - name: Publish app
+        uses: Azure/cli@v1.0.0
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az storage blob upload-batch -s $GITHUB_WORKSPACE/src/Notes.Spa/build -d \$web --account-name ${{ secrets.STORAGE_ACCOUNT_NAME }}
