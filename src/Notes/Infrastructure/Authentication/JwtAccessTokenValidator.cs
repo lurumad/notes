@@ -19,12 +19,12 @@ namespace Notes.Infrastructure.Authentication
         private const string BEARER = "Bearer ";
         private readonly IHttpClientFactory clientFactory;
         private readonly JwtSettings jwtSecurity;
-        private readonly ILogger log;
+        private readonly ILogger<JwtAccessTokenValidator> log;
 
         public JwtAccessTokenValidator(
             IHttpClientFactory clientFactory,
             JwtSettings jwtSecurity,
-            ILogger log)
+            ILogger<JwtAccessTokenValidator> log)
         {
             this.clientFactory = clientFactory ?? throw new ArgumentNullException(nameof(clientFactory));
             this.jwtSecurity = jwtSecurity ?? throw new ArgumentNullException(nameof(jwtSecurity));

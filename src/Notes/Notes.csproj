@@ -13,7 +13,7 @@
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </Content>
     <Content Include="local.settings.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
@@ -27,7 +27,7 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="$(MicrosoftNETSdkFunctions)" />
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Condition="'$(Configuration)' != 'Release'">
     <None Update="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
