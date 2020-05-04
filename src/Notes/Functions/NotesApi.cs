@@ -32,8 +32,8 @@ namespace Notes
             this.accessTokenValidator = accessTokenValidator ?? throw new ArgumentNullException(nameof(accessTokenValidator));
         }
 
-        [FunctionName("Migrate_Get")]
-        public async Task<IActionResult> Get([HttpTrigger(AuthorizationLevel.Anonymous, nameof(HttpMethods.Get), Route = "migrate")] HttpRequest req)
+        [FunctionName("Migrate_Put")]
+        public async Task<IActionResult> Get([HttpTrigger(AuthorizationLevel.Anonymous, nameof(HttpMethods.Put), Route = "migrate")] HttpRequest req)
         {
             var user = await accessTokenValidator.Validate(req);
 
