@@ -1,5 +1,4 @@
-﻿using IdentityModel.Client;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
 

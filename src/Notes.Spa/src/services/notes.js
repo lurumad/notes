@@ -44,4 +44,10 @@ const removeAll = () => {
   return request.then((_) => _);
 };
 
-export default { getAll, create, update, remove, removeAll };
+export default {
+  getAll,
+  create,
+  update,
+  remove,
+  removeAll,
+};
