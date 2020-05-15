@@ -5,6 +5,9 @@ on:
     paths:
       - "src/Notes.Spa/**"
 
+env:
+  AZURE_WEBAPP_PACKAGE_PATH: "./src/Notes.Spa" # set this to the path to your web app project, defaults to the repository root
+
 jobs:
   build_and_publish:
     runs-on: ubuntu-latest
@@ -21,16 +24,16 @@ jobs:
       - name: Install npm packages
         shell: bash
         run: |
-          cd $GITHUB_WORKSPACE/src/Notes.Spa
+          cd ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
           yarn install
       - name: Build app
         shell: bash
         run: |
-          cd $GITHUB_WORKSPACE/src/Notes.Spa
+          cd ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
           yarn build
-      - name: Publish app
-        uses: Azure/cli@v1.0.0
+      - name: "Run Azure webapp deploy action using publish profile credentials"
+        uses: azure/webapps-deploy@v2
         with:
-          azcliversion: latest
-          inlineScript: |
-            az storage blob upload-batch -s $GITHUB_WORKSPACE/src/Notes.Spa/build -d \$web --account-name ${{ secrets.STORAGE_ACCOUNT_NAME }}
+          app-name: ${{ secrets.AZURE_FRONTENDAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_FRONTENDAPP_PUBLISH_PROFILE }}
+          package: "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/build"

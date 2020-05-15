@@ -1,6 +1,7 @@
 import axios from "axios";
 import store from "../stores/store";
-const baseUrl = "/api/notes";
+
+const baseUrl = `${process.env.REACT_APP_API}/api/notes`;
 
 const getAll = () => {
   const user = store.getState().user;

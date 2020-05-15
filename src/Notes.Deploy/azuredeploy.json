@@ -134,6 +134,24 @@
       ]
     },
     {
+      "apiVersion": "2018-02-01",
+      "type": "Microsoft.Web/serverfarms",
+      "kind": "app",
+      "name": "[variables('hostingPlanName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {},
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers/', variables('sqlserverName'))]"
+      ],
+      "sku": {
+        "name": "[parameters('skuName')]",
+        "capacity": "[parameters('skuCapacity')]"
+      },
+      "tags": {
+        "displayName": "HostingPlan"
+      }
+    },
+    {
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2018-02-01",
       "name": "[variables('dynamicHostingPlanName')]",
@@ -148,6 +166,22 @@
       },
       "tags": {
         "displayName": "DynamicHostingPlan"
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2018-02-01",
+      "kind": "app",
+      "name": "[variables('webSiteName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+      ],
+      "tags": {
+        "displayName": "Frontend"
       }
     },
     {
