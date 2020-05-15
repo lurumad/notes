@@ -41,7 +41,7 @@ namespace Notes.Infrastructure.Authentication
                 return NotAuthenticated();
             }
 
-            if (authorization.StartsWith(BEARER, System.StringComparison.OrdinalIgnoreCase))
+            if (authorization.StartsWith(BEARER, StringComparison.OrdinalIgnoreCase))
             {
                 token = authorization.Substring(BEARER.Length).Trim();
             }
